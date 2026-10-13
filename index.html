@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Book &amp; Notes Vault</title>
+    <meta name="description" content="Accessible book and notes catalog with regex search, stats and JSON import/export.">
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="main.js"></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+        <h1 class="brand">Book &amp; Notes Vault</h1>
+        <button id="menu-toggle" class="menu-toggle" aria-expanded="false" aria-controls="site-nav">Menu</button>
+        <nav id="site-nav" clas="site-nav" aria-label="Main">
+            <ul>
+             <li><a href="#dashboard">Dashboard</a></li>
+             <li><a href="#records">Records</a></li>
+             <li><a href="#form-section">Add / Edit</a></li>
+             <li><a href="#settings">Settings</a></li>
+             <li><a href="#about">About</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="main" tabindex="-1">
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+
+        <section id="dashboard" aria-labelledbly="dashboard-h">
+            <h2 id="dashboard-h">Dashboard</h2>
+            <div class="stat-grid">
+                <div class="stat"><span class="stat-label">Total records</span><strong id="stat-pages">0</strong></div>
+                <div class="stat"><span class="stat-label">Total pages</span><strong id="stat-pages">0</strong></div>
+                <div class="stat"><span class="Stat-label">Top tag</span><strong id="stat-tag">None</strong></div>
+                <div class="stat"><span class="stat-label">Reading load</span><strong id="stat-converted">0</strong></div>
+            </div>
+            <p id="cap-messge" class="cap-message" role="status" aria-live="polite"></p>
+            <p id="cap-alert" class="cap-message" role="alert" aria-live="assertive"></p>
+            <h3> Added in the last 7 days</h3>
+            <div id="trend" class="trend" role="img" aria-label="Bar chart of books added per day over the last 7 days"></div>
+        </section>
+
+        <section id ="records" aria-labelledby="records-h">
+            <h2 id="records-h">Records</h2>
+            <div class="toolbar">
+                <div class="field">
+                    <label for="search">Regex search</label>
+                    <input id="search" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. ^the|\b(|w+)|s+\1\b" aria-describedbly="search-help">
+                <p id="search-help" class="hint">Matches title, author, tag, date, and pages.</p>
+                </div>
+                <div class="field field-inline">
+                    <input id="case-toggle" type="checkbox" checkd>
+                    <label for="case-toggle">Case sensitive</label>
+                </div>
+                <div class="field">
+                    <label for="sort">Sort by</label>
+                    <select id="sort">
+                        <option value="dateAdded-desc">Date added (newest)</option>
+                        <option value="dateAdded-asc">Date added (oldest)</option>
+                        <option value="title-asc">Title (A to Z)</option>
+                        <option value="title-desc">Title (Z to A)</option>
+                        <option value="pages-desc">Pages (high to low)</option>
+                        <option value="pages-asc">Pages (low to high)</option>
+                    </select>
+                </div>
+            </div>
+            <p id="search-error" class="error" role="alert"></p>
+            <p id="result-count" class="hint" aria-live="polite"></p>
+
+            <div class="table-wrap">
+                <table id="records-table">
+                    <caption class="sr-only">Book and notes records</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Author</th>
+                            <th scope="col">Pages</th>
+                            <th scope="col">Tag</th>
+                            <th scope="col">Date Added</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="records-body"></tbody>
+                </table>
+            </div>
+            <p id="empty-state" class="empty" hidden>No records match. Add a book below or clear the search.</p>
+        </section>
+
+        <section id="form-section" aria-labelledby="form-h">
+            <h2 id="form-h">Add / Edit</h2>
+            <form id="record-form" novalidate>
+                <input type="hidden" id="rec-id"
+                <div class="field">
+                    <label for="title">Title</label>
+                    <input id="title" name="title" type="text" required aria-describedby="title-err">
+                    <p id="title-err" class="error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                    <label for="author">Author</label>
+                    <input id="author" name="author" type="text" required aria-describedby="author-err">
+                    <p id="author-err" class="error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                    <label for="pages">Pages</label>
+                    <input id="pages" name="pages" type="text" inputmode="decimal" required aria-describedby="pages-err">
+                    <p id="pages-err" class="error" aria-live="polite"></p>
+                </div>
+                <div class="field">
+                    <label for="tag">Tag</label>
+                    <input id="tag" name="tag" type="text" required aria-describedby="tag-err">
+                    <p id="tag-err" class="error" aria-live="polite"></p>
+                </div>
+                <div class="field"
+                <label for="dateAdded">Date added (YYYY-MM-DD)</label>
+                <input id="dateAdded" name="dateAdded" type="text" inputmode="numeric" placeholder="2026-10-11" required aria-describedby="dateAdded-err">
+                <p id="dateAdded-err" class="error" aria-live="polite"></p>
+            </div>
+            <div class="actions">
+                <button type="submit" id="save-btn" class="btn primary">Add record</button>
+                <button type="button" id="cancel-btn" class="btn" hidden>Cancel edit</button>
+            </div>
+        </form>
+        </section>
+
+        <section id="settings" aria-labelledby="settings-h">
+            <h2 id="settings-h:">Settings</h2>
+            <div class="settings-grid">
+                <div class="field"
+                    <label for="cap">Page cap (target)</label>
+                    <input id="cap" type="number" min="1"step="1">
+                </div>
+                <div class="field">
+                    <label for="unit">Display unit</label>
+                    <select id="unit">
+                        <option value="pages">Pages</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>   
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="ppm">Pages per minute</label>
+                    <input id="ppm" type="number" min="0.1" step="0.1">
+                </div>
+                <div class="field field-inline">
+                    <input id="theme-toggle" type="checkbox">
+                    <label for="theme-toggle">Dark theme</label>
+                </div>
+            </div>
+            <h3>Data</h3>
+            <div class="actions">
+                <button type="button" id="export-btn" class="btn">Export JSON</button>
+                <label for="import-file" class="btn">Import JSON</label>
+                <input id="import-file" class="sr-only" type="file" accept="application/json,.json">
+                <button type="button" id="seed-btn" class="btn">Load sample data</button>
+            </div>
+            <p id="import-error" class="error" role="alert"></p>
+        </section>
+
+       <section id="about" aria-labelledby="about-h">
+        <h2 id="about-h">About</h2>
+        <p>Book &amp; Notes Vault is a small, framework-free catalog for the books you read and the notes you keep. It demonstrates regex validation and search, accessible UI, and local persistence.</p>
+        <p>Contact: <a href="https://github.com/bbugingo-blip">Github:bbugingo-blip</a> &middot; <a href="mailto:b.bugingo@alustudent.com">b.bugingo@alustudent.com</a></p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+    <p>&copy; 2026 Book &amp; Notes Vault. Data is stored only in your browser.</p>
+    </footer>
+</body>
+</html>
