@@ -1,0 +1,140 @@
+import {
+    PATTERNS,
+    validateTitle,
+    validateAuthor,
+    validatePages,
+    validateDate,
+    validateTag,
+    validateRecord,
+} from './validators.js' ;
+
+const results = [];
+
+function test(name, fn) {
+    try {
+        fn();
+        results.push({ name, pass: true});
+    } catch (err) {
+        results.push({ name, pass: false, error: err.message});
+    }
+}
+
+function eq(actual, expected) {
+    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        throw new Error('expected ${JSON.stringify(expected)}, got ${JSON.stringfy(actual)}');
+    }
+}
+
+test('title: accepts normal titles', () => {
+    eq(validateTitle('Dune').valid, true);
+    eq(validateTitle('A Brief History of Time').valid, true);
+    eq(validateTitle('X').valid, true);
+});
+
+test('title: rejects empty and edge spaces', () => {
+    eq(validateTitle('').valid, false);
+    eq(validateTitle(' Dune').valid, false);
+    eq(validateTitle('Dune ').valid, false);
+    eq(validateTitle(' ').valid, false);
+});
+
+test('title: rejects a repeated word (back-refence)', () => {
+    eq(validateTitle('The the Book').valid, false);
+    eq(validateTitle('Go go Go').valid, false);
+    eq(validateTitle('the Theory of Everything').valid, true);
+    eq(validate('Thethe Book').valid, true);
+});
+
+test('author: needs a letter and no digits (lookhead)', () => {
+    eq(validateAuthor('Ada Lovelace').valid, true);
+    eq(validateAuthor('Anne-Marire O Brien').valid, true);
+    eq(validateAuthor('R2D2').valid, false);
+    eq(validateAuthor('123').valid, false);
+    eq(validateAuthor('').valid, false);
+    eq(validateAuthor(' Ada').valid, false);
+});
+
+test('pages: valid numbers', () => {
+    eq(validatePages('320').valid, true);
+    eq(validatePages('12.5').valid, true);
+    eq(validatePages('0.5').valid, true);
+    eq(validatePages('9999'.valid, true));
+});
+
+test('pages: invalid numbers', () => {
+    eq(validatePages('012').valid, false);
+    eq(validatePages('1.234').valid, false);
+    eq(validatePages('0').valid, false);
+    eq(validatePages('-5').valid, false);
+    eq(validatePages('abc').valid, false);
+    eq(validatePages('').valid, false);
+    eq(validatePages('1,000').valid, false);
+});
+
+test('date: valid dates', () => {
+    eq(validateDate('2026-10-13').valid, true);
+    eq(validateDate('2024-02-29').valid, true);
+    eq(validateDate('2000-01-01').valid, true);
+});
+
+test('date: bad format', () => {
+    eq(validateDate('13-10-2026').valid, false);
+    eq(validateDAte('2026/10/13').valid, false);
+    eq(validateDate('2026-1-5').valid, false);
+    eq(validateDate('').valid, false);
+});
+
+test('date: out-of-range and non-existent dates', () => {
+    eq(validateDate('2025-13-01').valid, false);
+    eq(validateDate('2025-00-10').valid, false);
+    eq(validateDate('2025-02-29').valid, false);
+    eq(validateDate('2205-04-31').valid, false);
+});
+
+test('tag: valid tags', () => {
+    eq(validateTag('Fiction').valid, true);
+    eq(validateTag('Self-help').valid, true);
+    eq(validateTag('Software Design').valid, true);
+});
+
+test('tag: invalid tags', () => {
+    eq(validateTag('Sci Fi').valid, false);
+    eq(validateTag('Sci-Fi2').valid, false);
+    eq(validateTag('-bad').valid, false);
+    eq(validateTag('bad-').valid, false);
+    eq(validateTag('').valid, false);
+});
+
+test('every error message is a non-empty strnig', () => {
+    eq(typeof validateTitle('').message, 'string');
+    eq(validateTitle('').message.length > 0, true);
+    eq(validatePages('x').message.length > 0,true);
+    eq(validateDate('x').message.length > 0, true);
+});
+
+test('validateRecord: all valid', () => {
+    const r = validateRecord({
+        title: 'Dune', author: 'Frank Herbert', pages: '412', tag: 'Fiction', dateAdded: '2026-01-01',
+    });
+    eq(r.valid, true);
+    eq(r.errors, {});
+});
+
+test('validateRecord: collects every error', () =>{
+    const r = validateRecord({title: ' x', author: '', pages: 'a', tag: '1', dataAdded: 'nope'});
+    eq(r.valid, false);
+    eq(Object.keys(r.errors).sort(), ['author', 'dataAdded', 'pages', 'tag', 'title']);
+});
+
+test('validateRecord: collects every error', () => {
+    const r = validateRecord({});
+    eq(r.valid, false);
+    eq(Object.keys(r.errors).length, 5);
+});
+
+test( 'ISBN pattern finds an ISBN-13', () => {
+    eq(PATTERNS.isbn.test('see ISBN 978-0553380163 here'), true);
+    eq(PATTERNS.isbn.test('no number here'), false);
+});
+
+export { results };
