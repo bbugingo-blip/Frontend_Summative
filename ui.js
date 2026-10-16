@@ -7,8 +7,8 @@ const FORM_FIELDS = ['title', 'author', 'pages', 'tag', 'dateAdded'];
 export function announce(message) {
     const el = $('status');
     el.textContent = '';
-    setTimeout(() => { el.textContent = message; }, 20)}; 
-
+    setTimeout(() => { el.textContent = message; }, 20); 
+}
 
 export function renderRecords(records, re) {
     const body = $('records-body');
@@ -26,7 +26,7 @@ export function renderRecords(records, re) {
         <td data-label="Tag">${highlight(r.tag, re)}</td>
         <td data-label="Date added">${highlight(r.dateAdded, re)}</td>
         <td class="row-actions">
-          <button type="button" class="btn" data-actions="edit" aria-label="Edit ${escapeHtml(r.title)}">Edit</button>
+          <button type="button" class="btn" data-action="edit" aria-label="Edit ${escapeHtml(r.title)}">Edit</button>
           <button type="button" class="btn danger" data-action="delete" aria-label="Delete ${escapeHtml(r.title)}">Delete</button>
         </td>`;
         body.appendChild(tr);
@@ -53,7 +53,7 @@ export function showFieldError(field, message) {
 }
 
 export function clearFormErrors() {
-    FORM_FIELDS.forEach(f => showFieldsError(f, ''));
+    FORM_FIELDS.forEach(f => showFieldError(f, ''));
 }
 
 export function fillForm(rec) {

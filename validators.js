@@ -4,8 +4,8 @@ export const PATTERNS = {
     date: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/,
     tag: /^[A-Za-z]+(?:[ -][A-Za-z]+)*$/,
     duplicateWord: /\b(\w+)\s+\1\b/i,
-    author: /^(?=,*[A-Za-z])(?!.*\d)\S(?:.*\S)?$/,
-    isbn: /\b(?:97[89][- ]?)?\d{1,5}[- ]?\d+[- ]?\d+[- ]?\b/,
+    author: /^(?=.*[A-Za-z])(?!.*\d)\S(?:.*\S)?$/,
+    isbn: /\b(?:97[89][- ]?)?\d{1,5}[- ]?\d+[- ]?\d+[- ]?[\dX]\b/,
 };
 
 const ok = { valid: true, message: '' };
