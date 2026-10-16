@@ -1,4 +1,5 @@
 import { highlight, escapeHtml } from './search.js';
+import { computeStats, capStatus, convertPages, formatUnit } from './state.js';
 
 const $ = id => document.getElementById(id);
 
@@ -37,6 +38,47 @@ export function renderResultCount(shown, total) {
     $('result-count').textContent = shown === total
     ? `${total} record${total === 1 ? '' : 's'}`
     : `${shown} of ${total} records match`;
+}
+
+export function renderStats(records, settings) {
+    const s = computeStats(records);
+    $('stat-total').textContent = s.total;
+    $('stat-pages').textContent = s.totalPages.toLocaleString();
+    $('stat-tag').textContent = s.topTag ? `${s.topTag.tag} (${s.topTag.count})` :
+    $('stat-converted').textContent = formatUnit(
+        convertPages(s.totalPages, settings.unit, settings.pagesPerMinute),
+        settings.unit
+    );
+
+    const cap = capStatus(s.totalPages, settings.cap);
+    const polite = $('cap-message');
+    const assertive = $('cap-alert');
+    const calm = cap.over ? '' : `${cap.remaining.toLocaleString()} pages remaining of ${settings.cap.toLocaleString()}.`;
+    const alert = cap.over ? `Over target by ${cap.overage.toLocaleString()} pages (cap ${settings.cap.toLocaleString()}).` : '';
+    if (polite.textContent !== calm) polite.textContent = calm;
+    if (assertive.textContent !== alert) assertive.textContent = alert;
+    assertive.classList.toggle('over', cap.over);
+
+    const trend = $('trend');
+    const max = Math.max(1, ...s.trend.map(t => t.count));
+    trend.innerHTML = s.trend.map(t => `
+        <div class="trend-col">
+        <span>${t.count}</span>
+        <div class="trend-bar" style="height:${(t.count / max) * 80}%"></div>
+        <span>${t.date.slice(5)}</span>
+        </div>`).join('');
+    trend.setAttribute(
+        'arial-label',
+        'Books added per day, last 7 days: ' + s.trend.map(t => `${t.date} ${t.count}`).join(', ')
+    );
+}
+
+export function renderSettings(settings) {
+    $('cap').value = settings.cap;
+    $('unit').value = settings.unit;
+    $('ppm').value = settings.pagesPerMinute;
+    $('theme-toggle').checked = settings.theme === 'dark';
+    document.documentElement.dataset.theme = settings.theme;
 }
 
 export function showSearchError(message) {

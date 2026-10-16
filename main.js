@@ -1,4 +1,4 @@
-import { getState, subscribe, addRecord, updateRecord, deleteRecord, replaceRecords } from './state.js';
+import { getState, subscribe, addRecord, updateRecord, deleteRecord, replaceRecords, updateSettings } from './state.js';
 import {
     validateTitle,
     validateAuthor,
@@ -21,7 +21,7 @@ const FIELD_VALIDATORS = {
 };
 
 function render() {
-    const { records } = getState();
+    const { records, settings } = getState();
     const pattern = $('search').value;
     const flags = $('case-toggle').checked ? 'i' : '';
     const re = compileRegex(pattern, flags);
@@ -30,9 +30,11 @@ function render() {
     const visible = sortRecords(filterRecords(records, re), $('sort').value);
     ui.renderRecords(visible, re);
     ui.renderResultCount(visible.length, records.length);
+    ui.renderStats(records, settings);
 }
 
 function init() {
+    ui.renderSettings(getState().settings);
     render();
     subscribe(render);
 
@@ -107,6 +109,25 @@ function init() {
                 $('search').focus();
             }
         }
+    });
+
+        $('cap').addEventListener('change', () => {
+        const v = Number($('cap').value);
+        if (Number.isFinite(v) && v > 0) updateSettings({ cap: Math.round(v) });
+        else $('cap').value = getState().settings.cap;
+    });
+
+    $('unit').addEventListener('change', () => updateSettings({ unit: $('unit').value }));
+
+    $('ppm').addEventListener('change', () => {
+        const v = Number($('ppm').value);
+        if (Number.isFinite(v) && v > 0) updateSettings({ pagesPerMinute: v });
+        else $('ppm').value = getState().settings.pagesPerMinute;
+    });
+
+    $('theme-toggle').addEventListener('change', () => {
+        updateSettings({ theme: $('theme-toggle').checked ? 'dark' : 'light' });
+        ui.renderSettings(getState().settings);
     });
 
     $('seed-btn').addEventListener('click', async () => {

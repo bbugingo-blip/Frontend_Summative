@@ -1,5 +1,6 @@
 const state = {
     records: [],
+    settings: { cap: 2000, unit: 'pages', pagesPerMinute: 1, theme: 'light' },
 };
 
 const listeners = new Set();
@@ -42,4 +43,47 @@ export function deleteRecord(id) {
 export function replaceRecords(records) {
     state.records = records;
     emit();
+}
+
+export function updateSettings(patch) {
+    state.settings = { ...state.settings, ...patch };
+    emit();
+}
+
+const DAY = 86400000;
+
+export function computeStats(records = state.records, today = new Date()) {
+    const total = records.length;
+    const totalPages = records.reduce((sum, r) => sum + Number(r.pages), 0);
+
+    const tagCounts = {};
+    for (const r of records) tagCounts[r.tag] = (tagCounts[r.tag] || 0) + 1;
+    const top = Object.entries(tagCounts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0];
+
+    const base = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    const trend = [];
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(base - i * DAY).toISOString().slice(0, 10);
+        trend.push({ date, count: records.filter(r => r.dateAdded === date).length });
+    }
+    return { total, totalPages, topTag: top ? {tag: top[0], count: top[1] } : null, trend };
+}
+
+export function capStatus(totalPages, cap) {
+    const diff = cap - totalPages;
+    return diff >= 0
+        ? { over: false, remaining: diff }
+        : {over: true, overage: Math.abs(diff) };
+}
+
+export function convertPages(pages, unit, pagesPerMinute = 1) {
+    const ppm = pagesPerMinute > 0 ? pagesPerMinute : 1;
+    if (unit === 'minutes') return pages / ppm;
+    if (unit === 'hours') return pages / ppm / 60;
+    return pages;
+}
+
+export function formatUnit(value, unit) {
+    const n = unit === 'pages' ? Math.round(value) : Math.round(value * 10) / 10;
+    return `${n.toLocaleString()} ${unit}`;
 }

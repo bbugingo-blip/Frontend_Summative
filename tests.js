@@ -8,6 +8,7 @@ import {
     validateRecord,
 } from './validators.js';
 import { compileRegex, escapeHtml, highlight, matchesRecord, filterRecords, sortRecords } from './search.js';
+import { computeStats, capStatus, convertPages, formatUnit } from './state.js';
 
 const results = [];
 
@@ -213,6 +214,70 @@ test('sortRecords: unknown key falls back and does not change the input', () => 
     const before = sample.map(r => r.title);
     eq(sortRecords(sample, 'nope').length, 3);
     eq(sample.map(r => r.title), before);
+});
+
+test('computeStats: totals and top tag', () => {
+    const today = new Date(2026, 9, 16);
+    const recs = [
+        { title: 'A', pages: 100, tag: 'Fiction', dateAdded: '2026-10-16' },
+        { title: 'B', pages: 50.5, tag: 'Notes', dateAdded: '2026-10-15' },
+        { title: 'C', pages: 20, tag: 'Fiction', dateAdded: '2026-10-16' },
+    ];
+    const s = computeStats(recs, today);
+    eq(s.total, 3);
+    eq(s.totalPages, 170.5);
+    eq(s.topTag, { tag: 'Fiction', count: 2 });
+});
+
+test('computeStats: empty list has no top tag', () => {
+    const s = computeStats([], new Date(2026, 9, 16));
+    eq(s.total, 0);
+    eq(s.totalPages, 0);
+    eq(s.topTag, null);
+});
+
+test('computeStats: top tag ties break alphabetically', () => {
+    const recs = [
+        { pages: 1, tag: 'Notes', dateAdded: '2026-10-16' },
+        { pages: 1, tag: 'Fiction', dateAdded: '2026-10-16' },
+    ];
+    eq(computeStats(recs, new Date(2026, 9, 16)).topTag.tag, 'Fiction');
+});
+
+test('computeStats: 7-day trend counts per day, oldest first', () => {
+    const recs = [
+        { pages: 1, tag: 'A', dateAdded: '2026-10-16' },
+        { pages: 1, tag: 'A', dateAdded: '2026-10-16' },
+        { pages: 1, tag: 'A', dateAdded: '2026-10-10' },
+        { pages: 1, tag: 'A', dateAdded: '2026-10-09' },
+    ];
+    const t = computeStats(recs, new Date(2026, 9, 16)).trend;
+    eq(t.length, 7);
+    eq(t[0], { date: '2026-10-10', count: 1 });
+    eq(t[6], { date: '2026-10-16', count: 2 });
+});
+
+test('capStatus: remaining, exactly at cap, and over', () => {
+    eq(capStatus(100, 150), { over: false, remaining: 50 });
+    eq(capStatus(150, 150), { over: false, remaining: 0 });
+    eq(capStatus(200, 150), { over: true, overage: 50 });
+});
+
+test('convertPages: pages, minutes and hours', () => {
+    eq(convertPages(120, 'pages', 2), 120);
+    eq(convertPages(120, 'minutes', 2), 60);
+    eq(convertPages(120, 'hours', 2), 1);
+});
+
+test('convertPages: bad pages-per-minute falls back to 1', () => {
+    eq(convertPages(60, 'minutes', 0), 60);
+    eq(convertPages(60, 'minutes', -3), 60);
+});
+
+test('formatUnit: rounds and labels', () => {
+    eq(formatUnit(212.6, 'pages'), '213 pages');
+    eq(formatUnit(1.26, 'hours'), '1.3 hours');
+    eq(formatUnit(0, 'minutes'), '0 minutes');
 });
 
 export { results };
