@@ -8,14 +8,14 @@ export function compileRegex(input, flags = 'i') {
 
 export function escapeHtml(text) {
     return String(text).replace(/[&<>"']/g, c => (
-        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&qout;', "'": '&#39;' }[c]
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
     ));
 }
 
 export function highlight(text, re) {
     const safe = escapeHtml(text);
     if (!re) return safe;
-    const flags = re.flag.includes('g') ? re.flags : re.flags + 'g';
+    const flags = re.flags.includes('g') ? re.flags : re.flags + 'g';
     const global = new RegExp(re.source, flags);
     try {
         const raw = String(text);
@@ -24,7 +24,7 @@ export function highlight(text, re) {
         for (const m of raw.matchAll(global)) {
             if (m[0] === '') continue;
             out += escapeHtml(raw.slice(last, m.index));
-            out += '<mark>${escapeHtml(m[0])}</mark>';
+            out += `<mark>${escapeHtml(m[0])}</mark>`;
             last = m.index + m[0].length;
         }
         return out + escapeHtml(raw.slice(last));
@@ -35,7 +35,7 @@ export function highlight(text, re) {
 
 export function matchesRecord(rec, re) {
     if (!re) return true;
-    const hay = [rec.title, rec.author, rec.tag, rec.dataAdded, String(rec.pages)].join(' | ');
+    const hay = [rec.title, rec.author, rec.tag, rec.dateAdded, String(rec.pages)].join(' | ');
     return re.test(hay);
 }
 
@@ -46,8 +46,8 @@ export function filterRecords(records, re) {
 }
 
 export const SORTERS = {
-    'dataAdded-desc': (a, b) => b.dateAdded.localeCompare(a.dateAdded),
-    'dataeAdded-asc': (a, b) => a.dateAdded.localeCompare(b.dateAdded),
+    'dateAdded-desc': (a, b) => b.dateAdded.localeCompare(a.dateAdded),
+    'dateAdded-asc': (a, b) => a.dateAdded.localeCompare(b.dateAdded),
     'title-asc': (a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base'}),
     'title-desc': (a, b) => b.title.localeCompare(a.title, undefined, {sensitivity: 'base'}),
     'pages-asc': (a, b) => a.pages - b.pages,

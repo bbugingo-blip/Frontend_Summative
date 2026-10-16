@@ -1,0 +1,122 @@
+[
+    {
+        "id": "rec_0001",
+        "title": "Clean Code",
+        "author": "Robert C. Martin",
+        "pages": 464,
+        "tag": "Programming",
+        "dateAdded": "2026-10-13",
+        "createdAt": "2026-10-13T08:00:00.000Z",
+        "updatedAt": "2026-10-13T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0002",
+        "title": "The Pragmatic Programmer",
+        "author": "Andrew Hunt",
+        "pages": 352,
+        "tag": "Programming",
+        "dateAdded": "2026-10-12",
+        "createdAt": "2026-10-12T08:00:00.000Z",
+        "updatedAt": "2026-10-12T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0003",
+        "title": "Things Fall Apart",
+        "author": "Chinua Achebe",
+        "pages": 209,
+        "tag": "Fiction",
+        "dateAdded": "2026-10-10",
+        "createdAt": "2026-10-10T08:00:00.000Z",
+        "updatedAt": "2026-10-10T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0004",
+        "title": "Leap Day Notes",
+        "author": "Ada Lovelace",
+        "pages": 1,
+        "tag": "Notes",
+        "dateAdded": "2024-02-29",
+        "createdAt": "2024-02-29T08:00:00.000Z",
+        "updatedAt": "2024-02-29T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0005",
+        "title": "Complete Works Omnibus",
+        "author": "William Shakespeare",
+        "pages": 1296,
+        "tag": "Fiction",
+        "dateAdded": "2025-12-31",
+        "createdAt": "2025-12-31T08:00:00.000Z",
+        "updatedAt": "2025-12-31T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0006",
+        "title": "A Brief History of Time (ISBN 978-0553380163)",
+        "author": "Stephen Hawking",
+        "pages": 212.5,
+        "tag": "Science",
+        "dateAdded": "2026-01-01",
+        "createdAt": "2026-01-01T08:00:00.000Z",
+        "updatedAt": "2026-01-01T08:00:00.000Z"  
+    },
+    {
+        "id": "rec_0007",
+        "title": "Servant Leadership in Practice",
+        "author": "Robert Greenleaf",
+        "pages": 340,
+        "tag": "Self-help",
+        "dateAdded": "2026-10-09",
+        "createdAt": "2026-10-09T08:00:00.000Z",
+        "updatedAt": "2026-10-09T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0008",
+        "title": "Regex Cheat Sheet: lookahead & backrefs",
+        "author": "Jeffrey Friedl",
+        "pages": 24,
+        "tag": "Programming",
+        "dateAdded": "2026-10-11",
+        "createdAt": "2026-10-11T08:00:00.000Z",
+        "updatedAt": "2026-10-11T08:00:00.000Z"
+    },
+    {
+        "id":"rec_0009",
+        "title": "Ubuntu: Notes on I Am Because We Are",
+        "author": "Mungi Ngomane",
+        "pages": 9999,
+        "tag": "Philosophy",
+        "dateAdded": "2023-07-04",
+        "createdAt": "2023-07-04T08:00:00.000Z",
+        "updatedAt": "2023-07-04T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0010",
+        "title": "Half a Yellow Sun",
+        "author": "Chimamanda Adichie",
+        "pages": 433,
+        "tag": "Fiction",
+        "dateAdded": "2026-10-13",
+        "createdAt": "2026-10-13T09:00:00.000Z",
+        "updatedAt": "2026-10-13T09:00:00.000Z"
+    },
+    {
+        "id": "rec_0011",
+        "title": "Domain-Driven Design",
+        "author": "Eric Evans",
+        "pages": 560,
+        "tag": "Software Design",
+        "dateAdded": "2022-03-15",
+        "createdAt": "2022-03-15T08:00:00.000Z",
+        "updatedAt": "2022-03-15T08:00:00.000Z"
+    },
+    {
+        "id": "rec_0012",
+        "title": "Tiny Pamphlet",
+        "author": "Anne-Marie O Brien",
+        "pages": 0.5,
+        "tag": "Notes",
+        "dateAdded": "2026-10-08",
+        "createdAt": "2026-10-08T08:00:00.000Z",
+        "updatedAt": "2026-10-08T08:00:00.000Z"
+    }
+]

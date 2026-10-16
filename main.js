@@ -1,3 +1,4 @@
+import { getState, subscribe, addRecord, updateRecord, deleteRecord, replaceRecords } from './state.js';
 import {
     validateTitle,
     validateAuthor,
@@ -6,6 +7,8 @@ import {
     validateDate,
     validateRecord,
 } from './validators.js';
+import { compileRegex, filterRecords, sortRecords } from './search.js';
+import * as ui from './ui.js';
 
 const $ = id => document.getElementById(id);
 
@@ -17,24 +20,22 @@ const FIELD_VALIDATORS = {
     dateAdded: validateDate,
 };
 
-function showFieldError(field, message) {
-    const input = $(field);
-    $('${field}-err').textContent = message;
-    if (message) input.setAtrribute('aria-invalid', 'true');
-    else input.removeAttribute('aria-invalid');
-}
+function render() {
+    const { records } = getState();
+    const pattern = $('search').value;
+    const flags = $('case-toggle').checked ? 'i' : '';
+    const re = compileRegex(pattern, flags);
+    ui.showSearchError(pattern && !re ? 'Invalid regular expression. Showing all records.' : '');
 
-function announce(message) {
-    const status = $('status');
-    status.textContent = '';
-    setTimeout(() => {status.textContent = message; }, 20);
-}
-
-function readForm() {
-    return Object.fromEntries(Object.keys(FIELD_VALIDATORS).map(f => [f, $(f).value]));
+    const visible = sortRecords(filterRecords(records, re), $('sort').value);
+    ui.renderRecords(visible, re);
+    ui.renderResultCount(visible.length, records.length);
 }
 
 function init() {
+    render();
+    subscribe(render);
+
     const toggle = $('menu-toggle');
     const nav = $('site-nav');
     toggle.addEventListener('click', () => {
@@ -48,25 +49,78 @@ function init() {
         }
     });
 
+    $('search').addEventListener('input', render);
+    $('case-toggle').addEventListener('change', render);
+    $('sort').addEventListener('change', render);
+
     for (const [field, validate] of Object.entries(FIELD_VALIDATORS)) {
         $(field).addEventListener('input', () => {
             const result = validate($(field).value);
-            showFieldError(field, result.valid ? '' : result.message);
+            ui.showFieldError(field, result.valid ? '' : result.message);
         });
     }
 
     $('record-form').addEventListener('submit', e => {
         e.preventDefault();
-        const { valid, errors } = validateRecord(readForm());
+        const data = ui.readForm();
+        const { valid, errors } = validateRecord(data);
         for (const field of Object.keys(FIELD_VALIDATORS)) {
-            showFieldError(field, errors[field] || '');
+            ui.showFieldError(field, errors[field] || '');
         }
         if (!valid) {
             $(Object.keys(FIELD_VALIDATORS).find(f => errors[f])).focus();
-            announce('Please fix the errors in the form.');
+            ui.announce('Please fix the errors in the form.');
             return;
         }
-        announce('All fields are valid.');
+        const { id, ...fields } = data;
+        if (id) {
+            updateRecord(id, fields);
+            ui.announce(`Updated "${fields.title}".`);
+        } else {
+            addRecord(fields);
+            ui.announce(`Added "${fields.title}".`);
+        }
+        ui.fillForm(null);
+        $('title').focus();
+    });
+
+    $('cancel-btn').addEventListener('click', () => {
+        ui.fillForm(null);
+        ui.announce('Edit cancelled.');
+    });
+
+    $('records-body').addEventListener('click', e => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const id = btn.closest('tr').dataset.id;
+        const rec = getState().records.find(r => r.id === id);
+        if (!rec) return;
+        if (btn.dataset.action === 'edit') {
+            ui.fillForm(rec);
+            $('form-section').scrollIntoView({ block: 'start' });
+            $('title').focus();
+            ui.announce(`Editing "${rec.title}".`);
+        } else if (btn.dataset.action === 'delete') {
+            if (window.confirm(`Delete "${rec.title}"? This cannot be undone.`)) {
+                deleteRecord(id);
+                ui.announce(`Deleted "${rec.title}".`);
+                $('search').focus();
+            }
+        }
+    });
+
+    $('seed-btn').addEventListener('click', async () => {
+        try {
+            const res = await fetch('seed.json');
+            const data = await res.json();
+            const bad = data.find(r => !validateRecord(r).valid);
+            if (bad) throw new Error(`"${bad.title}" is not valid.`);
+            replaceRecords(data.map(r => ({ ...r, pages: Number(r.pages) })));
+            ui.showImportError('');
+            ui.announce(`Loaded ${data.length} sample records.`);
+        } catch (err) {
+            ui.showImportError(`Could not load sample data. ${err.message}`);
+        }
     });
 }
 
