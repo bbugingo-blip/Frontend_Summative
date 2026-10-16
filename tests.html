@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Validation tests</title>
     <style>
-        body { font: 16px/1.5 system-ui, sans-serif; max-width: 720px; margin 2rem auto; padding: 0 1rem; }
+        body { font: 16px/1.5 system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
         li { padding: 4px 0; }
-        .pass { color: #1b6e3a: }
+        .pass { color: #1b6e3a; }
         .fail { color: #a4161a; font-weight: 600; }
     </style>
 </head>
@@ -25,15 +25,15 @@
         let failed = 0;
 
         for (const r of results) {
-            const li = docuemnt.createElement('li');
+            const li = document.createElement('li');
             li.className = r.pass ? 'pass' : 'fail';
-            li.textContent = '${r.pass ? 'PASS' : 'FAIL'}: ${r.name}${r.pass ? '' : '(' + r.error + ')'}';
+            li.textContent = `${r.pass ? 'PASS' : 'FAIL'}: ${r.name}${r.pass ? '' : ' (' + r.error + ')'}`;
             list.appendChild(li);
             if (!r.pass) failed++;
         } 
 
         document.getElementById('summary').textContent = 
-        `${resluts.length - failed} of ${results.length} tests passed.`;
+        `${results.length - failed} of ${results.length} tests passed.`;
      </script>
 </body>
 </html>

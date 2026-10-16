@@ -157,7 +157,7 @@ test('compileRegex: respects the case flag', () => {
 });
 
 test('escapeHtml: escapes markup characters', () => {
-    eq(escapeHtml('<b>"x" & \'y\'</b>'), '&lt;b&gt;&quot;x&quot;&amp;&#39;y&#39;&lt;/b&gt;');
+        eq(escapeHtml('<b>"x" & \'y\'</b>'), '&lt;b&gt;&quot;x&quot; &amp; &#39;y&#39;&lt;/b&gt;');
 });
 
 test('highlight: wraps matches in <mark>', () => {
