@@ -9,6 +9,7 @@ import {
 } from './validators.js';
 import { compileRegex, escapeHtml, highlight, matchesRecord, filterRecords, sortRecords } from './search.js';
 import { computeStats, capStatus, convertPages, formatUnit } from './state.js';
+import { exportJSON, parseImport } from './storage.js';
 
 const results = [];
 
@@ -141,8 +142,8 @@ test( 'ISBN pattern finds an ISBN-13', () => {
 
 const sample = [
     {title: 'Tea Time', author: 'Ada Lovelace', pages:120, tag: 'Notes', dateAdded: '2026-10-01' },
-    {title: 'Clean Code', author: 'Robert Martin', pages : 464, tag: 'Programming', dateAdded: '2026-10-13' },
-    {title: 'dune', author: 'Frank Herbert', pages: 412, tag: 'Fiction', dateAdded: '2026-01-01' },
+    {title: 'Clean Code', author: 'Robert Martin', pages :464, tag: 'Programming', dateAdded: '2026-10-13' },
+    {title: 'dune', author: 'Frank Herbert', pages:412, tag: 'Fiction', dateAdded: '2026-01-01' },
 ];
 
 test('compileRegex: valid, empty and invalid input', () => {
@@ -278,6 +279,56 @@ test('formatUnit: rounds and labels', () => {
     eq(formatUnit(212.6, 'pages'), '213 pages');
     eq(formatUnit(1.26, 'hours'), '1.3 hours');
     eq(formatUnit(0, 'minutes'), '0 minutes');
+});
+
+const good = {
+    id: 'rec_0001', title: 'Dune', author: 'Frank Herbert', pages: 412, tag: 'Fiction',
+    dateAdded: '2026-01-01', createdAt: '2026-01-01T08:00:00.000Z', updatedAt: '2026-01-01T08:00:00.000Z',
+};
+
+test('import: accepts a valid export round-trip', () => {
+    const r = parseImport(exportJSON([good]));
+    eq(r.ok, true);
+    eq(r.records.length, 1);
+    eq(r.records[0].title, 'Dune');
+});
+
+test('import: rejects malformed JSON and non-arrays', () => {
+    eq(parseImport('{nope').ok, false);
+    eq(parseImport('{"a":1}').ok, false);
+    eq(parseImport('').ok, false);
+});
+
+test('import: rejects duplicate ids', () => {
+    const r = parseImport(JSON.stringify([good, good]));
+    eq(r.ok, false);
+    eq(r.errors.some(e => e.includes('duplicate')), true);
+});
+
+test('import: rejects missing id and missing timestamps', () => {
+    eq(parseImport(JSON.stringify([{ ...good, id: undefined }])).ok, false);
+    eq(parseImport(JSON.stringify([{ ...good, createdAt: undefined }])).ok, false);
+});
+
+test('import: rejects invalid field values', () => {
+    eq(parseImport(JSON.stringify([{ ...good, pages: 'abc' }])).ok, false);
+    eq(parseImport(JSON.stringify([{ ...good, title: ' Dune' }])).ok, false);
+    eq(parseImport(JSON.stringify([{ ...good, dateAdded: '2025-02-30' }])).ok, false);
+});
+
+test('import: reports every bad record and keeps no data on failure', () => {
+    const r = parseImport(JSON.stringify([good, { ...good, id: 'rec_0002', pages: 'x' }, { ...good, id: 'rec_0003', tag: '1' }]));
+    eq(r.ok, false);
+    eq(r.records, []);
+    eq(r.errors.length >= 2, true);
+});
+
+test('import: rejects non-object entries', () => {
+    eq(parseImport('[1, "a", null]').ok, false);
+});
+
+test('export: produces JSON that parses back to the same records', () => {
+    eq(JSON.parse(exportJSON([good])), [good]);
 });
 
 export { results };

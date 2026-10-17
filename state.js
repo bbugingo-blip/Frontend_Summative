@@ -1,6 +1,8 @@
+import { loadRecords, saveRecords, loadSettings, saveSettings } from './storage.js';
+
 const state = {
-    records: [],
-    settings: { cap: 2000, unit: 'pages', pagesPerMinute: 1, theme: 'light' },
+     records: loadRecords(),
+    settings: loadSettings(),
 };
 
 const listeners = new Set();
@@ -8,6 +10,12 @@ export const subscribe = fn => { listeners.add(fn); return () => listeners.delet
 const emit = () => listeners.forEach(fn => fn(state));
 
 export const getState = () => state;
+
+function persist() {
+    saveRecords(state.records);
+    saveSettings(state.settings);
+    emit();
+}
 
 function nextId() {
     const nums = state.records
@@ -21,7 +29,7 @@ export function addRecord(data) {
     const now = new Date().toISOString();
     const rec = { id: nextId(), ...data, pages: Number(data.pages), createdAt: now, updatedAt: now };
     state.records.push(rec);
-    emit();
+    persist();
     return rec;
 }
 
@@ -29,25 +37,25 @@ export function updateRecord(id, data) {
     const rec = state.records.find(r => r.id === id);
     if (!rec) return null;
     Object.assign(rec, data, { pages: Number(data.pages), updatedAt: new Date().toISOString() });
-    emit();
+    persist();
     return rec;
 }
 
 export function deleteRecord(id) {
     const before = state.records.length;
     state.records = state.records.filter(r => r.id !== id);
-    emit();
+    persist();
     return state.records.length < before;
 }
 
 export function replaceRecords(records) {
     state.records = records;
-    emit();
+    persist();
 }
 
 export function updateSettings(patch) {
     state.settings = { ...state.settings, ...patch };
-    emit();
+    persist();
 }
 
 const DAY = 86400000;

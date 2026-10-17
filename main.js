@@ -1,4 +1,5 @@
 import { getState, subscribe, addRecord, updateRecord, deleteRecord, replaceRecords, updateSettings } from './state.js';
+import { exportJSON, parseImport } from './storage.js';
 import {
     validateTitle,
     validateAuthor,
@@ -130,15 +131,43 @@ function init() {
         ui.renderSettings(getState().settings);
     });
 
-    $('seed-btn').addEventListener('click', async () => {
+        $('export-btn').addEventListener('click', () => {
+        const blob = new Blob([exportJSON(getState().records)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'vault-export.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        ui.announce('Exported records as JSON.');
+    });
+
+    $('import-file').addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const result = parseImport(await file.text());
+        e.target.value = '';
+        if (!result.ok) {
+            const shown = result.errors.slice(0, 5).join(' ');
+            const more = result.errors.length > 5 ? ` (+${result.errors.length - 5} more)` : '';
+            ui.showImportError(`Import failed. ${shown}${more}`);
+            ui.announce('Import failed. No data was changed.');
+            return;
+        }
+        ui.showImportError('');
+        replaceRecords(result.records);
+        ui.announce(`Imported ${result.records.length} records.`);
+    });
+
+       $('seed-btn').addEventListener('click', async () => {
         try {
             const res = await fetch('seed.json');
-            const data = await res.json();
-            const bad = data.find(r => !validateRecord(r).valid);
-            if (bad) throw new Error(`"${bad.title}" is not valid.`);
-            replaceRecords(data.map(r => ({ ...r, pages: Number(r.pages) })));
+            if (!res.ok) throw new Error('seed.json could not be found.');
+            const result = parseImport(await res.text());
+            if (!result.ok) throw new Error(result.errors[0]);
+            replaceRecords(result.records);
             ui.showImportError('');
-            ui.announce(`Loaded ${data.length} sample records.`);
+            ui.announce(`Loaded ${result.records.length} sample records.`);
         } catch (err) {
             ui.showImportError(`Could not load sample data. ${err.message}`);
         }
