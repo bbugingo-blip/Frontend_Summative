@@ -2,9 +2,8 @@
 
 **Theme:** Book & Notes Vault. An accessible, responsive, framework-free catalog of books and notes with regex validation and search, stats, and local persistence.
 
-- **Live site (GitHub Pages):** https://bbugingo-blip.github.io/<repo>/<path>/
 - **Repository:** https://github.com/bbugingo-blip/<repo>
-- **Demo video (unlisted):** <paste link>
+- **Demo video (unlisted):** https://youtu.be/fEnwzpa4DnY
 - **Contact:** [bbugingo-blip](https://github.com/bbugingo-blip) · b.bugingo@alustudent.com
 
 ## Features
